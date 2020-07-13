@@ -6,6 +6,9 @@ const router = new Router()
 
 router.prefix('/api')
 
-router.get('/shop', shopCtrl.getShopList)
+router
+  .get('/shop', shopCtrl.getShopList)
+  .get('/banner', shopCtrl.getBanner)
+  .get('/test', shopCtrl.test)
 
 module.exports = router
