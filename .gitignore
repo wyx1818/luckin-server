@@ -36,3 +36,6 @@ npm-debug.log
 .env
 test
 .idea
+deal.json
+models/initData.js
+models/readFile.js

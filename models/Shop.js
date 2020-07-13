@@ -2,8 +2,7 @@ const { DataTypes, Model } = require('sequelize')
 
 const sequelize = require('./connect')
 
-class Shop extends Model {
-}
+class Shop extends Model {}
 
 Shop.init({
   shop_name: {
