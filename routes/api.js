@@ -3,9 +3,12 @@ const Router = require('@koa/router')
 const shopCtrl = require('../controllers/shop')
 const userCtrl = require('../controllers/user')
 
+const userAuth = require('../middleware/userAuth')
+
 const router = new Router()
 
 router.prefix('/api')
+router.use(['/test'], userAuth)
 
 router
   .get('/shop', shopCtrl.getShopList)

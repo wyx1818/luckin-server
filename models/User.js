@@ -8,9 +8,15 @@ User.init({
   username: DataTypes.STRING,
   password: DataTypes.STRING,
   nickname: DataTypes.STRING,
-  sex: DataTypes.BOOLEAN,
+  sex: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
   phone: DataTypes.STRING,
-  weCat: DataTypes.BOOLEAN
+  weCat: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  }
 }, {
   sequelize
 })

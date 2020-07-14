@@ -97,5 +97,5 @@ exports.getShopList = async ctx => {
 }
 
 exports.test = ctx => {
-  ctx.body = '测试'
+  ctx.body = ctx.user
 }

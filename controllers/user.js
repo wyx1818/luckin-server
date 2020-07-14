@@ -23,13 +23,7 @@ exports.createUser = async ctx => {
   const isExist = await User.findOne({ where: { username } })
 
   if (isExist) {
-    ctx.body = {
-      meta: {
-        code: 200,
-        msg: '用户名已存在'
-      },
-      body: null
-    }
+    errorBody(ctx, '用户名已存在')
     return false
   }
 
@@ -96,11 +90,11 @@ exports.login = async ctx => {
     ctx.body = {
       meta: {
         code: 200,
-        msg: '登陆成功',
-        body: {
-          user: user.username,
-          token
-        }
+        msg: '登陆成功'
+      },
+      body: {
+        user: user.username,
+        token
       }
     }
   } else {
