@@ -108,7 +108,5 @@ exports.testToken = ctx => {
 
   console.log(Token.validToken(token))
 
-  ctx.body = {
-    body: Token.validToken(token)
-  }
+  ctx.body = Token.validToken(token)
 }

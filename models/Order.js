@@ -20,6 +20,7 @@ Order.init({
   payment_method: { // 支付方式
     type: DataTypes.STRING
   },
+  state: DataTypes.INTEGER,
   is_discount: DataTypes.BOOLEAN,
   coupon_id: DataTypes.INTEGER
 }, {

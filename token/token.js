@@ -17,10 +17,9 @@ exports.addToken = tokenInfo => { // 创建token并导出
  */
 exports.validToken = token => {
   return jwt.verify(token, secret, function (err, decode) {
-    if (err) {
-      console.log('token.js token验证失败', err.message)
-      return false
+    return {
+      decode,
+      err: err
     }
-    return decode
   })
 }
