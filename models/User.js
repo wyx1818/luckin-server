@@ -2,12 +2,16 @@ const { DataTypes, Model } = require('sequelize')
 
 const sequelize = require('./connect')
 
-class User extends Model {}
+class User extends Model {
+}
 
 User.init({
   username: DataTypes.STRING,
   password: DataTypes.STRING,
-  nickname: DataTypes.STRING,
+  nickname: {
+    type: DataTypes.STRING,
+    defaultValue: '还没有昵称呢'
+  },
   sex: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
@@ -16,6 +20,10 @@ User.init({
   weCat: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
+  },
+  userImg: {
+    type: DataTypes.STRING,
+    defaultValue: '/images/avatar/default.jpeg'
   }
 }, {
   sequelize

@@ -18,6 +18,7 @@ exports.createUser = async ctx => {
   // 获取用户传入数据
   const username = ctx.request.body.username
   const password = ctx.request.body.password
+  const nickname = ctx.request.body.nickname
 
   // 判断用户名是否已经存在
   const isExist = await User.findOne({ where: { username } })
@@ -29,10 +30,9 @@ exports.createUser = async ctx => {
 
   const res = await User.create({
     username,
-    password: bcrypt.hashSync(password, bcrypt.genSaltSync(10))
+    password: bcrypt.hashSync(password, bcrypt.genSaltSync(10)),
+    nickname
   })
-
-  console.log(res.toJSON())
 
   ctx.body = {
     meta: {
@@ -94,6 +94,8 @@ exports.login = async ctx => {
       },
       body: {
         user: user.username,
+        userImg: user.userImg,
+        nickname: user.nickname,
         token
       }
     }

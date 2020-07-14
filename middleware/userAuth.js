@@ -31,16 +31,4 @@ module.exports = async (ctx, next) => {
       }
     }
   }
-
-  // try {
-  //
-  // } catch (e) {
-  //   ctx.status = 401
-  //   ctx.body = {
-  //     meta: {
-  //       code: 401,
-  //       msg: 'token验证失败：' + e.message
-  //     }
-  //   }
-  // }
 }

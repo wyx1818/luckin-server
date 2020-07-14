@@ -7,7 +7,7 @@ const secret = process.env.TOKEN // 密钥，不能丢
  * @returns {undefined|*}
  */
 exports.addToken = tokenInfo => { // 创建token并导出
-  return jwt.sign(tokenInfo, secret, { expiresIn: '1h' })
+  return jwt.sign(tokenInfo, secret, { expiresIn: '4h' })
 }
 
 /**

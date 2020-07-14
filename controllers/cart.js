@@ -2,17 +2,40 @@ const Cart = require('../models/Cart')
 const Shop = require('../models/Shop')
 const User = require('../models/User')
 
-User.hasMany(Cart, {
-  onDelete: 'RESTRICT',
-  onUpdate: 'RESTRICT'
-})
+function getPrice (cup, price) {
+  switch (cup) {
+    case 0:
+      return price
+    case 1:
+      return price + 3
+    case 2:
+      return price + 5
+  }
+}
+
+function errorBody (ctx, msg) {
+  ctx.status = 400
+  ctx.body = {
+    meta: {
+      code: 400,
+      msg: msg
+    }
+  }
+}
 
 exports.addCart = async ctx => {
   const dataBody = ctx.request.body
+  const mode = ['0', '1', '2', 'null']
+
+  if (!dataBody.shop_id) return errorBody(ctx, '请传入商品ID')
+  if (!dataBody.amount) return errorBody(ctx, '请传入商品数量')
+  if (!mode.includes(dataBody.cup)) return errorBody(ctx, '规格有误')
+  if (!mode.includes(dataBody.temperature)) return errorBody(ctx, '温度有误')
+  if (!mode.includes(dataBody.sweetness)) return errorBody(ctx, '甜度有误')
+
   let resSuccess, isExist
   // 判断商品是否已存在
-  if (dataBody.cup && dataBody.temperature && dataBody.sweetness) {
-    console.log('一般')
+  if (dataBody.cup !== 'null' && dataBody.temperature !== 'null' && dataBody.sweetness !== 'null') {
     isExist = await Cart.findOne({
       where: {
         shop_id: dataBody.shop_id,
@@ -22,7 +45,6 @@ exports.addCart = async ctx => {
       }
     })
   } else {
-    console.log('食物')
     dataBody.cup = dataBody.temperature = dataBody.sweetness = null
     isExist = await Cart.findOne({ where: { shop_id: dataBody.shop_id } })
   }
@@ -40,14 +62,22 @@ exports.addCart = async ctx => {
       }
     }
   } else {
-    console.log('创建商品', ctx.user)
     const resUser = await User.findOne({ where: { id: ctx.user.id } })
+    let resShop = await Shop.findOne({ where: { id: dataBody.shop_id } })
+
+    if (!resShop) return errorBody(ctx, '商品id有误')
+
+    resShop = resShop.toJSON()
+
     resSuccess = await resUser.createCart({
       cup: dataBody.cup,
       temperature: dataBody.temperature,
       sweetness: dataBody.sweetness,
       amount: dataBody.amount,
-      shop_id: dataBody.shop_id
+      shop_id: dataBody.shop_id,
+      shop_name: resShop.shop_name,
+      shop_imgUrl: resShop.shop_imgUrl,
+      shop_price: getPrice(parseInt(dataBody.cup), resShop.shop_price)
     })
 
     ctx.body = {
@@ -57,6 +87,84 @@ exports.addCart = async ctx => {
       },
       body: {
         Date: resSuccess.updatedAt
+      }
+    }
+  }
+}
+
+exports.getCart = async ctx => {
+  const res = await Cart.findAll({ where: { UserId: ctx.user.id } })
+  ctx.body = {
+    meta: {
+      code: 200,
+      msg: '购物车列表获取成功'
+    },
+    body: res
+  }
+}
+
+exports.updateCart = async ctx => {
+  const id = ctx.request.body.id
+  const amount = parseInt(ctx.request.body.amount)
+
+  if (!id) {
+    ctx.status = 400
+    ctx.body = {
+      meta: {
+        code: 400,
+        msg: '缺少购物车条目ID'
+      }
+    }
+    return false
+  } else if (!amount) {
+    ctx.status = 400
+    ctx.body = {
+      meta: {
+        code: 400,
+        msg: '缺少数量'
+      }
+    }
+    return false
+  }
+
+  const resUpdate = await Cart.update({ amount }, { where: { id, UserId: ctx.user.id } })
+
+  if (resUpdate[0]) {
+    ctx.body = {
+      meta: {
+        code: 200,
+        msg: '数据更新成功'
+      }
+    }
+  } else {
+    ctx.status = 400
+    ctx.body = {
+      meta: {
+        code: 400,
+        msg: '该用户没有这条数据，请检查数据id是否正确'
+      }
+    }
+  }
+}
+
+exports.deleteCart = async ctx => {
+  const id = ctx.request.body.id
+
+  const res = await Cart.destroy({ where: { id, UserId: ctx.user.id } })
+
+  if (res) {
+    ctx.body = {
+      meta: {
+        code: 200,
+        msg: '数据删除成功'
+      }
+    }
+  } else {
+    ctx.status = 400
+    ctx.body = {
+      meta: {
+        code: 400,
+        msg: '没有该条数据'
       }
     }
   }

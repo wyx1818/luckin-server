@@ -22,7 +22,11 @@ router
   .post('/user/register', userCtrl.createUser)
   .post('/user/login', userCtrl.login)
 
-  .put('/cart', cartCtrl.addCart)
+  .post('/cart', cartCtrl.addCart)
+  .put('/cart', cartCtrl.updateCart)
+  .get('/cart', cartCtrl.getCart)
+  .delete('/cart', cartCtrl.deleteCart)
+
   .post('/user/test', userCtrl.testToken)
 
 module.exports = router
