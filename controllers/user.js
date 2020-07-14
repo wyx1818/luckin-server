@@ -4,7 +4,7 @@ const User = require('../models/User')
 const Token = require('../token/token')
 
 function errorBody (ctx, msg) {
-  ctx.status = 201
+  ctx.status = 200
   ctx.body = {
     meta: {
       code: 201,

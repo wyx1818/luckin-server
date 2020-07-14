@@ -54,13 +54,13 @@ exports.getShopList = async ctx => {
           ],
           temperature: [
             { id: 0, title: '常温' },
-            { id: 1, title: '加冰' },
-            { id: 2, title: '加热' }
+            { id: 1, title: '冰' },
+            { id: 2, title: '热' }
           ],
           sweetness: [
             { id: 0, title: '无糖' },
-            { id: 0, title: '少糖' },
-            { id: 0, title: '多糖' }
+            { id: 0, title: '半糖' },
+            { id: 0, title: '全糖' }
           ]
         },
         data: beverages
