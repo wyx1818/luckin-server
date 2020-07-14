@@ -9,9 +9,23 @@ User.hasMany(Cart, {
 
 exports.addCart = async ctx => {
   const dataBody = ctx.request.body
-  let resSuccess
+  let resSuccess, isExist
   // 判断商品是否已存在
-  const isExist = await Cart.findOne({ where: { shop_id: dataBody.shop_id } })
+  if (dataBody.cup && dataBody.temperature && dataBody.sweetness) {
+    console.log('一般')
+    isExist = await Cart.findOne({
+      where: {
+        shop_id: dataBody.shop_id,
+        cup: dataBody.cup,
+        temperature: dataBody.temperature,
+        sweetness: dataBody.sweetness
+      }
+    })
+  } else {
+    console.log('食物')
+    dataBody.cup = dataBody.temperature = dataBody.sweetness = null
+    isExist = await Cart.findOne({ where: { shop_id: dataBody.shop_id } })
+  }
 
   if (isExist) {
     const total = isExist.amount + parseInt(dataBody.amount)
