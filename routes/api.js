@@ -4,13 +4,14 @@ const shopCtrl = require('../controllers/shop')
 const userCtrl = require('../controllers/user')
 const couponCtrl = require('../controllers/coupon')
 const cartCtrl = require('../controllers/cart')
+const orderCtrl = require('../controllers/order')
 
 const userAuth = require('../middleware/userAuth')
 
 const router = new Router()
 
 router.prefix('/api')
-router.use(['/test', '/cart', '/couponAuth'], userAuth)
+router.use(['/test', '/cart', '/couponAuth', '/order'], userAuth)
 
 router
   .get('/shop', shopCtrl.getShopList)
@@ -26,6 +27,10 @@ router
   .put('/cart', cartCtrl.updateCart)
   .get('/cart', cartCtrl.getCart)
   .delete('/cart', cartCtrl.deleteCart)
+  .get('/cart/num', cartCtrl.getAllCart)
+
+  .get('/order', orderCtrl.getOrder)
+  .get('/order/all', orderCtrl.getAllOrder)
 
   .post('/user/test', userCtrl.testToken)
 

@@ -29,9 +29,10 @@ async function getTotal (ctx) {
   const resAll = await Cart.findAll({ where: { UserId: ctx.user.id } })
 
   return resAll.reduce((prev, item) => {
-    prev += item.amount
+    prev.numTotal += item.amount
+    prev.priceTotal += item.amount * item.shop_price
     return prev
-  }, 0)
+  }, { numTotal: 0, priceTotal: 0 })
 }
 
 exports.addCart = async ctx => {
@@ -137,6 +138,11 @@ exports.updateCart = async ctx => {
   const id = ctx.request.body.id
   const amount = parseInt(ctx.request.body.amount)
 
+  if (amount < 1) {
+    errorBody(ctx, '数量不能小于1')
+    return false
+  }
+
   if (!id) {
     ctx.status = 400
     ctx.body = {
@@ -205,6 +211,20 @@ exports.deleteCart = async ctx => {
         code: 400,
         msg: '没有该条数据'
       }
+    }
+  }
+}
+
+exports.getAllCart = async ctx => {
+  const { numTotal } = await getTotal(ctx)
+
+  ctx.body = {
+    meta: {
+      code: 200,
+      msg: '获取总数成功'
+    },
+    body: {
+      numTotal
     }
   }
 }
