@@ -10,6 +10,8 @@ function getPrice (cup, price) {
       return price + 3
     case 2:
       return price + 5
+    default:
+      return price
   }
 }
 
@@ -23,9 +25,20 @@ function errorBody (ctx, msg) {
   }
 }
 
+async function getTotal (ctx) {
+  const resAll = await Cart.findAll({ where: { UserId: ctx.user.id } })
+
+  return resAll.reduce((prev, item) => {
+    prev += item.amount
+    return prev
+  }, 0)
+}
+
 exports.addCart = async ctx => {
   const dataBody = ctx.request.body
-  const mode = ['0', '1', '2', 'null']
+  console.log(dataBody)
+
+  const mode = [0, 1, 2, null, '0', '1', '2', 'null']
 
   if (!dataBody.shop_id) return errorBody(ctx, '请传入商品ID')
   if (!dataBody.amount) return errorBody(ctx, '请传入商品数量')
@@ -52,13 +65,17 @@ exports.addCart = async ctx => {
   if (isExist) {
     const total = isExist.amount + parseInt(dataBody.amount)
     resSuccess = await isExist.update({ amount: total })
+
+    const totalShop = await getTotal(ctx)
+
     ctx.body = {
       meta: {
         code: 200,
         msg: '更新成功'
       },
       body: {
-        Date: resSuccess.updatedAt
+        Date: resSuccess.updatedAt,
+        total: totalShop
       }
     }
   } else {
@@ -79,13 +96,14 @@ exports.addCart = async ctx => {
       shop_imgUrl: resShop.shop_imgUrl,
       shop_price: getPrice(parseInt(dataBody.cup), resShop.shop_price)
     })
-
+    const total = await getTotal(ctx)
     ctx.body = {
       meta: {
         code: 200,
         msg: '添加成功'
       },
       body: {
+        total,
         Date: resSuccess.updatedAt
       }
     }
@@ -93,13 +111,25 @@ exports.addCart = async ctx => {
 }
 
 exports.getCart = async ctx => {
-  const res = await Cart.findAll({ where: { UserId: ctx.user.id } })
+  let res = await Cart.findAll({ where: { UserId: ctx.user.id } })
+
+  res = JSON.parse(JSON.stringify(res))
+
+  res = res.map(item => {
+    delete item.UserId
+    delete item.createdAt
+    return item
+  })
+  const total = await getTotal(ctx)
   ctx.body = {
     meta: {
       code: 200,
       msg: '购物车列表获取成功'
     },
-    body: res
+    body: {
+      total,
+      data: res
+    }
   }
 }
 
@@ -130,10 +160,15 @@ exports.updateCart = async ctx => {
   const resUpdate = await Cart.update({ amount }, { where: { id, UserId: ctx.user.id } })
 
   if (resUpdate[0]) {
+    const total = await getTotal(ctx)
+
     ctx.body = {
       meta: {
         code: 200,
         msg: '数据更新成功'
+      },
+      body: {
+        total
       }
     }
   } else {
@@ -153,10 +188,14 @@ exports.deleteCart = async ctx => {
   const res = await Cart.destroy({ where: { id, UserId: ctx.user.id } })
 
   if (res) {
+    const total = await getTotal(ctx)
     ctx.body = {
       meta: {
         code: 200,
         msg: '数据删除成功'
+      },
+      body: {
+        total
       }
     }
   } else {

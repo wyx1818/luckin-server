@@ -18,7 +18,7 @@ module.exports = async (ctx, next) => {
       ctx.body = {
         meta: {
           code: 401,
-          msg: 'token认证失败：' + resToken.err.message
+          msg: 'token认证失败'
         }
       }
     }
