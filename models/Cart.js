@@ -1,10 +1,12 @@
 const { DataTypes, Model } = require('sequelize')
 const Shop = require('./Shop')
 const User = require('../models/User')
+const Order = require('../models/Order')
 
 const sequelize = require('./connect')
 
-class Cart extends Model {}
+class Cart extends Model {
+}
 
 Cart.init({
   shop_id: {
@@ -20,7 +22,15 @@ Cart.init({
   sweetness: DataTypes.INTEGER,
   amount: DataTypes.INTEGER,
   shop_imgUrl: DataTypes.STRING,
-  shop_price: DataTypes.INTEGER
+  shop_price: DataTypes.INTEGER,
+  OrderId: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Order,
+      key: 'id'
+    },
+    defaultValue: null
+  }
 }, {
   sequelize
 })

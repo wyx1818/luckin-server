@@ -30,6 +30,7 @@ router
   .get('/cart/num', cartCtrl.getAllCart)
 
   .get('/order', orderCtrl.getOrder)
+  .put('/order', orderCtrl.addOrder)
   .get('/order/all', orderCtrl.getAllOrder)
 
   .post('/user/test', userCtrl.testToken)

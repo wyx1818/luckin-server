@@ -26,7 +26,7 @@ function errorBody (ctx, msg) {
 }
 
 async function getTotal (ctx) {
-  const resAll = await Cart.findAll({ where: { UserId: ctx.user.id } })
+  const resAll = await Cart.findAll({ where: { UserId: ctx.user.id, OrderId: null } })
 
   return resAll.reduce((prev, item) => {
     prev.numTotal += item.amount
@@ -37,7 +37,6 @@ async function getTotal (ctx) {
 
 exports.addCart = async ctx => {
   const dataBody = ctx.request.body
-  console.log(dataBody)
 
   const mode = [0, 1, 2, null, '0', '1', '2', 'null']
 
@@ -55,7 +54,8 @@ exports.addCart = async ctx => {
         shop_id: dataBody.shop_id,
         cup: dataBody.cup,
         temperature: dataBody.temperature,
-        sweetness: dataBody.sweetness
+        sweetness: dataBody.sweetness,
+        OrderId: null
       }
     })
   } else {
@@ -112,13 +112,14 @@ exports.addCart = async ctx => {
 }
 
 exports.getCart = async ctx => {
-  let res = await Cart.findAll({ where: { UserId: ctx.user.id } })
+  let res = await Cart.findAll({ where: { UserId: ctx.user.id, OrderId: null } })
 
   res = JSON.parse(JSON.stringify(res))
 
   res = res.map(item => {
     delete item.UserId
     delete item.createdAt
+    delete item.OrderId
     return item
   })
   const total = await getTotal(ctx)
