@@ -16,13 +16,14 @@ exports.deleteInfo = (data, opt) => {
         delete item[attr]
       }
     }
-    delete item.UserId
-    delete item.createdAt
-    delete item.updatedAt
     return item
   })
 }
 
 exports.jsonData = (data) => {
   return JSON.parse(JSON.stringify(data))
+}
+
+exports.prefixZero = (num, n) => {
+  return (Array(n).join(0) + num).slice(-n)
 }

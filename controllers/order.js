@@ -2,12 +2,13 @@ const Order = require('../models/Order')
 const Cart = require('../models/Cart')
 const Address = require('../models/Address')
 const Coupon = require('../models/Coupon')
+const ShopAddress = require('../models/ShopAddress')
 
-const { deleteInfo, errorBody, jsonData } = require('../utils/common')
+const { deleteInfo, errorBody, jsonData, prefixZero } = require('../utils/common')
 
 async function checkOrderData (ctx) {
   let coupon, address, payment, isDelivery
-  let resCoupon
+  let resCoupon, resAddress
   // 校验传入数据
   try {
     if (ctx.request.body.is_discount || ctx.request.body.coupon_id) {
@@ -53,15 +54,38 @@ async function checkOrderData (ctx) {
     return false
   }
 
-  // 查询地址
-  const resAddress = jsonData(await Address.findOne({ where: { id: address, UserId: ctx.user.id } }))
-  // 判断地址
-  if (!resAddress) {
-    errorBody(ctx, '该用户没有这个地址')
-    return false
+  if (isDelivery) {
+    // 查询地址
+    resAddress = jsonData(await Address.findOne({ where: { id: address, UserId: ctx.user.id } }))
+    // 判断地址
+    if (!resAddress) {
+      errorBody(ctx, '该用户没有这个地址')
+      return false
+    }
+  } else {
+    resAddress = jsonData(await ShopAddress.findOne({ where: { id: address } }))
+    // 判断地址
+    if (!resAddress) {
+      errorBody(ctx, '没有这个门店')
+      return false
+    }
   }
 
-  return { resCart, resCoupon, payment }
+  return { resCart, resCoupon, payment, resAddress }
+}
+
+/**
+ * 删除对象指定属性
+ * @param data
+ * @param attrArray
+ * @returns {*}
+ */
+function deleteObj (data, attrArray) {
+  for (const attr of attrArray) {
+    delete data[attr]
+  }
+
+  return data
 }
 
 exports.getOrder = async ctx => {
@@ -72,11 +96,15 @@ exports.getOrder = async ctx => {
   }
   let resAddress = await Address.findAll({ where: { UserId: ctx.user.id } })
   let resCoupon = await Coupon.findAll({ where: { UserId: ctx.user.id, is_used: false } })
+  let resShop = await ShopAddress.findOne({ where: { id: 1 } })
 
-  resCart = deleteInfo(jsonData(resCart), ['shop_id', 'OrderId'])
-  resAddress = deleteInfo(jsonData(resAddress))
-  resCoupon = deleteInfo(jsonData(resCoupon), ['OrderId', 'is_used'])
-
+  resCart = deleteInfo(jsonData(resCart), ['shop_id', 'OrderId', 'createdAt', 'updatedAt', 'UserId'])
+  resAddress = deleteInfo(jsonData(resAddress), ['createdAt', 'updatedAt', 'UserId'])
+  resCoupon = deleteInfo(jsonData(resCoupon), ['OrderId', 'is_used', 'createdAt', 'updatedAt', 'UserId'])
+  resShop = resShop.toJSON()
+  resShop.name = resShop.name + '(No.' + prefixZero(resShop.id, 4) + ')'
+  delete resShop.createdAt
+  delete resShop.updatedAt
   ctx.body = {
     meta: {
       code: 200,
@@ -85,12 +113,7 @@ exports.getOrder = async ctx => {
     body: {
       Cart: resCart,
       myAddress: resAddress,
-      shopAddress: {
-        shop_name: '丰尚商务港店(No.0912)',
-        address: '成都市武侯区',
-        address_detail: '永丰路49号丰尚商务港一层大堂',
-        distance: '813m'
-      },
+      shopAddress: resShop,
       Coupon: resCoupon,
       pay: [
         { id: 0, name: '余额' },
@@ -105,7 +128,7 @@ exports.addOrder = async ctx => {
   // 校验数据
   const isPass = await checkOrderData(ctx)
   if (!isPass) return false
-  const { resCart, resCoupon, payment } = isPass
+  const { resCart, resCoupon, payment, resAddress } = isPass
 
   // 计算订单价格
   let orderMoney = resCart.reduce((price, item) => {
@@ -115,9 +138,11 @@ exports.addOrder = async ctx => {
   // 判断是否使用了优惠券
   if (resCoupon) (orderMoney -= resCoupon.sale_num)
 
+  if (orderMoney <= 0) orderMoney = 0
+
   const resOrder = await Order.create({
     UserId: ctx.user.id,
-    addressId: JSON.parse(ctx.request.body.address_id),
+    addressId: resAddress.id,
     order_money: orderMoney,
     payment_method: payment,
     couponId: ctx.request.body.coupon_id,
@@ -126,7 +151,7 @@ exports.addOrder = async ctx => {
   })
 
   // 修改 购物车状态
-  const resCartUpdate = await Cart.update({ OrderId: resOrder.id },
+  await Cart.update({ OrderId: resOrder.id },
     {
       where: {
         UserId: ctx.user.id
@@ -138,7 +163,8 @@ exports.addOrder = async ctx => {
     is_used: true
   }, {
     where: {
-      UserId: ctx.user.id
+      UserId: ctx.user.id,
+      id: ctx.request.body.coupon_id
     }
   })
 
@@ -150,6 +176,34 @@ exports.addOrder = async ctx => {
   }
 }
 
-exports.getAllOrder = ctx => {
-  ctx.body = '获取全部订单'
+exports.getAllOrder = async ctx => {
+  let resAddress, resCart
+  const orderList = []
+  const resOrder = await Order.findAll({ where: { UserId: ctx.user.id } })
+
+  for (const item of jsonData(resOrder)) {
+    resAddress = await Address.findOne({ where: { id: item.addressId } })
+    resCart = await Cart.findAll({ where: { UserId: ctx.user.id, OrderId: item.id } })
+    if (resCart.length !== 0) {
+      resCart = deleteInfo(jsonData(resCart), ['OrderId', 'UserId', 'createdAt', 'updatedAt'])
+    }
+
+    orderList.push({
+      id: item.id,
+      payment: item.order_money,
+      isDelivery: item.isDelivery,
+      state: item.state,
+      date: item.createdAt,
+      address: deleteObj(resAddress.toJSON(), ['UserId', 'createdAt', 'updatedAt']),
+      shop: resCart
+    })
+  }
+
+  ctx.body = {
+    meta: {
+      code: 200,
+      msg: '获取全部订单成功'
+    },
+    body: orderList
+  }
 }
