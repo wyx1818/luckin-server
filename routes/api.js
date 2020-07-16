@@ -5,20 +5,22 @@ const userCtrl = require('../controllers/user')
 const couponCtrl = require('../controllers/coupon')
 const cartCtrl = require('../controllers/cart')
 const orderCtrl = require('../controllers/order')
+const addressCtrl = require('../controllers/address')
 
 const userAuth = require('../middleware/userAuth')
+
+const area = require('../utils/area')
 
 const router = new Router()
 
 router.prefix('/api')
-router.use(['/test', '/cart', '/couponAuth', '/order'], userAuth)
+router.use(['/test', '/cart', '/couponAuth', '/order', '/address', '/coupon'], userAuth)
 
 router
   .get('/shop', shopCtrl.getShopList)
   .get('/banner', shopCtrl.getBanner)
 
   .get('/coupon', couponCtrl.getCoupon)
-  .get('/couponAuth', couponCtrl.getCouponAuth)
 
   .post('/user/register', userCtrl.createUser)
   .post('/user/login', userCtrl.login)
@@ -32,6 +34,8 @@ router
   .get('/order', orderCtrl.getOrder)
   .put('/order', orderCtrl.addOrder)
   .get('/order/all', orderCtrl.getAllOrder)
+
+  .get('/address', addressCtrl.getAddress)
 
   .post('/user/test', userCtrl.testToken)
 

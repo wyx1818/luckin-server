@@ -2,6 +2,8 @@ const Cart = require('../models/Cart')
 const Shop = require('../models/Shop')
 const User = require('../models/User')
 
+const { errorBody } = require('../utils/common')
+
 function getPrice (cup, price) {
   switch (cup) {
     case 0:
@@ -12,16 +14,6 @@ function getPrice (cup, price) {
       return price + 5
     default:
       return price
-  }
-}
-
-function errorBody (ctx, msg) {
-  ctx.status = 400
-  ctx.body = {
-    meta: {
-      code: 400,
-      msg: msg
-    }
   }
 }
 
@@ -55,6 +47,7 @@ exports.addCart = async ctx => {
         cup: dataBody.cup,
         temperature: dataBody.temperature,
         sweetness: dataBody.sweetness,
+        UserId: ctx.user.id,
         OrderId: null
       }
     })
@@ -191,7 +184,7 @@ exports.updateCart = async ctx => {
 
 exports.deleteCart = async ctx => {
   const id = ctx.request.body.id
-
+  console.log(id)
   const res = await Cart.destroy({ where: { id, UserId: ctx.user.id } })
 
   if (res) {

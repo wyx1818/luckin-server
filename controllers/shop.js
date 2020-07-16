@@ -72,7 +72,7 @@ exports.getShopList = async ctx => {
           cup: [
             { id: 0, title: '小杯', price: 0 },
             { id: 1, title: '中杯', price: 3 },
-            { id: 2, title: '小杯', price: 5 }
+            { id: 2, title: '大杯', price: 5 }
           ],
           temperature: [
             { id: 0, title: '常温' },

@@ -3,34 +3,10 @@ const Cart = require('../models/Cart')
 const Address = require('../models/Address')
 const Coupon = require('../models/Coupon')
 
-function jsonData (data) {
-  return JSON.parse(JSON.stringify(data))
-}
-
-function deleteInfo (data, opt) {
-  return data.map(item => {
-    if (opt) {
-      for (const attr of opt) {
-        delete item[attr]
-      }
-    }
-    delete item.UserId
-    delete item.createdAt
-    delete item.updatedAt
-    return item
-  })
-}
-
-function errorBody (ctx, msg) {
-  ctx.status = 400
-  ctx.body = {
-    meta: 400,
-    msg
-  }
-}
+const { deleteInfo, errorBody, jsonData } = require('../utils/common')
 
 async function checkOrderData (ctx) {
-  let coupon, address, payment
+  let coupon, address, payment, isDelivery
   let resCoupon
   // 校验传入数据
   try {
@@ -53,8 +29,10 @@ async function checkOrderData (ctx) {
 
     address = JSON.parse(ctx.request.body.address_id)
     payment = JSON.parse(ctx.request.body.payment)
+    isDelivery = JSON.parse(ctx.request.body.isDelivery)
 
     if (typeof address !== 'number') throw new Error('地址参数非法')
+    if (typeof isDelivery !== 'boolean') throw new Error('自提参数非法')
     if (![0, 1, 2].includes(payment)) throw new Error('支付方式非法')
   } catch (e) {
     console.log('创建订单接收参数出现错误', e.message)
@@ -95,7 +73,7 @@ exports.getOrder = async ctx => {
   let resAddress = await Address.findAll({ where: { UserId: ctx.user.id } })
   let resCoupon = await Coupon.findAll({ where: { UserId: ctx.user.id, is_used: false } })
 
-  resCart = deleteInfo(jsonData(resCart))
+  resCart = deleteInfo(jsonData(resCart), ['shop_id', 'OrderId'])
   resAddress = deleteInfo(jsonData(resAddress))
   resCoupon = deleteInfo(jsonData(resCoupon), ['OrderId', 'is_used'])
 
@@ -106,7 +84,13 @@ exports.getOrder = async ctx => {
     },
     body: {
       Cart: resCart,
-      Address: resAddress,
+      myAddress: resAddress,
+      shopAddress: {
+        shop_name: '丰尚商务港店(No.0912)',
+        address: '成都市武侯区',
+        address_detail: '永丰路49号丰尚商务港一层大堂',
+        distance: '813m'
+      },
       Coupon: resCoupon,
       pay: [
         { id: 0, name: '余额' },
@@ -137,7 +121,8 @@ exports.addOrder = async ctx => {
     order_money: orderMoney,
     payment_method: payment,
     couponId: ctx.request.body.coupon_id,
-    state: 1
+    state: 1,
+    isDelivery: ctx.request.body.isDelivery
   })
 
   // 修改 购物车状态
@@ -161,10 +146,6 @@ exports.addOrder = async ctx => {
     meta: {
       code: 200,
       msg: '加入订单成功'
-    },
-    body: {
-      resOrder,
-      resCartUpdate
     }
   }
 }
