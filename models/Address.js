@@ -8,15 +8,21 @@ class Address extends Model {
 
 Address.init({
   name: DataTypes.STRING,
-  sex: DataTypes.BOOLEAN,
+  sex: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
   phone: DataTypes.STRING,
-  address: DataTypes.STRING,
-  address_detail: DataTypes.STRING,
+  area: DataTypes.STRING,
+  detail: DataTypes.STRING,
   is_default: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
   tag: DataTypes.STRING,
+  ZIP_code: {
+    type: DataTypes.STRING
+  },
   UserId: {
     type: DataTypes.INTEGER,
     references: {
@@ -29,6 +35,6 @@ Address.init({
   sequelize
 })
 
-// Address.sync({ force: true })
+// Address.sync({ alter: true })
 
 module.exports = Address

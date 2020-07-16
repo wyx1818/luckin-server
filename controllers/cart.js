@@ -184,7 +184,7 @@ exports.updateCart = async ctx => {
 
 exports.deleteCart = async ctx => {
   const id = ctx.request.body.id
-  console.log(id)
+
   const res = await Cart.destroy({ where: { id, UserId: ctx.user.id } })
 
   if (res) {

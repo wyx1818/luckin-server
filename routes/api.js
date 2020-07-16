@@ -25,9 +25,9 @@ router
   .post('/user/register', userCtrl.createUser)
   .post('/user/login', userCtrl.login)
 
+  .get('/cart', cartCtrl.getCart)
   .post('/cart', cartCtrl.addCart)
   .put('/cart', cartCtrl.updateCart)
-  .get('/cart', cartCtrl.getCart)
   .delete('/cart', cartCtrl.deleteCart)
   .get('/cart/num', cartCtrl.getAllCart)
 
@@ -36,6 +36,9 @@ router
   .get('/order/all', orderCtrl.getAllOrder)
 
   .get('/address', addressCtrl.getAddress)
+  .post('/address', addressCtrl.addAddress)
+  .put('/address', addressCtrl.updateAddress)
+  .delete('/address', addressCtrl.deleteAddress)
 
   .post('/user/test', userCtrl.testToken)
 
