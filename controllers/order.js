@@ -64,6 +64,7 @@ async function checkOrderData (ctx) {
     }
   } else {
     resAddress = jsonData(await ShopAddress.findOne({ where: { id: address } }))
+    console.log('自提')
     // 判断地址
     if (!resAddress) {
       errorBody(ctx, '没有这个门店')
