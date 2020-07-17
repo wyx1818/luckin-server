@@ -13,10 +13,6 @@ Coupon.init({
   is_used: DataTypes.BOOLEAN,
   OrderId: {
     type: DataTypes.INTEGER,
-    references: {
-      model: Order,
-      key: 'id'
-    },
     defaultValue: null
   },
   UserId: {

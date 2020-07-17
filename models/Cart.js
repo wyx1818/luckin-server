@@ -30,6 +30,10 @@ Cart.init({
       key: 'id'
     },
     defaultValue: null
+  },
+  UserId: {
+    type: DataTypes.INTEGER,
+    defaultValue: null
   }
 }, {
   sequelize

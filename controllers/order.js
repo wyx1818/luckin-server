@@ -101,7 +101,8 @@ exports.getOrder = async ctx => {
   resCart = deleteInfo(jsonData(resCart), ['shop_id', 'OrderId', 'createdAt', 'updatedAt', 'UserId'])
   resAddress = deleteInfo(jsonData(resAddress), ['createdAt', 'updatedAt', 'UserId'])
   resCoupon = deleteInfo(jsonData(resCoupon), ['OrderId', 'is_used', 'createdAt', 'updatedAt', 'UserId'])
-  resShop = resShop.toJSON()
+
+  resShop = jsonData(resShop)
   resShop.name = resShop.name + '(No.' + prefixZero(resShop.id, 4) + ')'
   delete resShop.createdAt
   delete resShop.updatedAt
@@ -125,6 +126,8 @@ exports.getOrder = async ctx => {
 }
 
 exports.addOrder = async ctx => {
+  const UserId = ctx.user.id
+  const CouponId = ctx.request.body.coupon_id
   // 校验数据
   const isPass = await checkOrderData(ctx)
   if (!isPass) return false
@@ -141,7 +144,7 @@ exports.addOrder = async ctx => {
   if (orderMoney <= 0) orderMoney = 0
 
   const resOrder = await Order.create({
-    UserId: ctx.user.id,
+    UserId,
     addressId: resAddress.id,
     order_money: orderMoney,
     payment_method: payment,
@@ -151,22 +154,25 @@ exports.addOrder = async ctx => {
   })
 
   // 修改 购物车状态
+  console.log('更新购物车', resOrder.id, UserId)
   await Cart.update({ OrderId: resOrder.id },
     {
       where: {
-        UserId: ctx.user.id
+        UserId
       }
     })
   // 修改 优惠券状态
-  await Coupon.update({
-    OrderId: resOrder.id,
-    is_used: true
-  }, {
-    where: {
-      UserId: ctx.user.id,
-      id: ctx.request.body.coupon_id
-    }
-  })
+  if (CouponId) {
+    await Coupon.update({
+      OrderId: resOrder.id,
+      is_used: true
+    }, {
+      where: {
+        UserId,
+        id: CouponId
+      }
+    })
+  }
 
   ctx.body = {
     meta: {
