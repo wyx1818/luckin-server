@@ -21,6 +21,7 @@ router
   .get('/banner', shopCtrl.getBanner)
 
   .get('/coupon', couponCtrl.getCoupon)
+  .post('/coupon', couponCtrl.addCoupon)
 
   .post('/user/register', userCtrl.createUser)
   .post('/user/login', userCtrl.login)

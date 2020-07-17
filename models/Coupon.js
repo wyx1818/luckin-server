@@ -1,7 +1,6 @@
 const { DataTypes, Model } = require('sequelize')
 
 const sequelize = require('./connect')
-const Order = require('./Order')
 const User = require('./User')
 
 class Coupon extends Model {

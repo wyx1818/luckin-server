@@ -18,3 +18,14 @@ exports.getCoupon = async ctx => {
     }
   }
 }
+
+exports.addCoupon = async ctx => {
+  const key = ctx.request.body.key
+
+  const keyList = ['2333', 'H52002', '666']
+
+  if (keyList.includes(key)) {
+    await Coupon.create({ coupon_name: '全国通用券' })
+  }
+  ctx.body = '兑换成功'
+}

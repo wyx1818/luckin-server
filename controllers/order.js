@@ -158,7 +158,8 @@ exports.addOrder = async ctx => {
   await Cart.update({ OrderId: resOrder.id },
     {
       where: {
-        UserId
+        UserId,
+        OrderId: null
       }
     })
   // 修改 优惠券状态
@@ -188,7 +189,11 @@ exports.getAllOrder = async ctx => {
   const resOrder = await Order.findAll({ where: { UserId: ctx.user.id } })
 
   for (const item of jsonData(resOrder)) {
-    resAddress = await Address.findOne({ where: { id: item.addressId } })
+    if (item.isDelivery) {
+      resAddress = await Address.findOne({ where: { id: item.addressId } })
+    } else {
+      resAddress = await ShopAddress.findOne({ where: { id: item.addressId } })
+    }
     resCart = await Cart.findAll({ where: { UserId: ctx.user.id, OrderId: item.id } })
     if (resCart.length !== 0) {
       resCart = deleteInfo(jsonData(resCart), ['OrderId', 'UserId', 'createdAt', 'updatedAt'])
