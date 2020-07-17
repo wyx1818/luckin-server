@@ -103,7 +103,6 @@ exports.getOrder = async ctx => {
   resCoupon = deleteInfo(jsonData(resCoupon), ['OrderId', 'is_used', 'createdAt', 'updatedAt', 'UserId'])
 
   resShop = jsonData(resShop)
-  resShop.name = resShop.name + '(No.' + prefixZero(resShop.id, 4) + ')'
   delete resShop.createdAt
   delete resShop.updatedAt
   ctx.body = {
